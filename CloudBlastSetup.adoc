@@ -1,0 +1,189 @@
+= Guide to set up and use cloud Blast on Google Cloud Platform (GCP). 
+:site-section: UserGuide
+:toc:
+:toc-title:
+:toc-placement: preamble
+:sectnums:
+:imagesDir: images
+:stylesDir: stylesheets
+:xrefstyle: full
+:experimental:
+ifdef::env-github[]
+:tip-caption: :bulb:
+:note-caption: :information_source:
+endif::[]
+
+By: `Ho Wei Chin, Tan Wei Qi, Soh Zi Quan, Jessica Low` School: `National Univeristy of Singapore`
+
+This documentation serves as an user guide to set up and install Blast on the Google Cloud Platform (GCP).
+
+== Preface
+
+=== Brief Introduction
+
+==== NCBI Blast
+Blast is a bioinformatics tool used for comparing primary biological sequence information, such as the amino acid sequences of proteins, or the nucleotides of DNA/ RNA sequences.It is capable of finding similar regions between different sequences which hence provide insights into the evolutionary and functional relationships between sequences or the identity of a sequence in a particular gene family. 
+
+==== Docker
+Docker on the other hand, is a computing tool primarily used for creating, running and deploying applications via containers. Containerisation makes it convenient for the packaging of the components and dependencies that an application requires into a single package. It is an operating system level virtualisation, where containers run user space on top of the operating system, which makes it lightweight, portable and fast.
+
+==== Google cloud computing 
+Last but not least, cloud computing allows the use of data storage and computing power without direct and active management by individuals. The "cloud" allows data center to operate like the Internet, where computing resources and data could be shared virtually in a convenient and scalable manner. The Google Cloud Platform is one of the many could computing platforms, where management tools and several cloud services like machine learning, data analytics, computing and data storage are provided.
+
+For reference, go the following URL: `https://github.com/ncbi/blast_plus_docs#google-cloud-platform-setup` .
+
+=== Setting up Google Cloud platform/ account
+
+`Step 1`: Under the table of contents, select “Google Cloud Platform Setup” as shown:
+
+image::img0.PNG[width="790"]
+
+`Step 2`: Scroll down to “Set up your GCP account and create a VM for analysis” as shown:
+
+image::img1.PNG[width="790"]
+
+`Step 3`: Follow the instructions in that section to set up your trial GCP account.
+
+== Setting up Google Cloud Platform (GCP) Virtual Machine
+
+Note: This guide assumes the user has set up their GCP account. Otherwise, the user should look at section Preface to set up his or her GCP account.
+
+`Step 1`: Create a GCP Virtual Machine (VM) running Ubuntu 18.04LTS
+
+On the GCP welcome screen panel, click on "Computer Engine", followed by clicking on "VM instances".
+
+image::img2.PNG[width="350", height="350"]
+
+1. Click on the blue "CREATE" buton on the top bar.
+2. Fill up the sections with the parameters as shown in the image below, and an estimated cost will be displayed at the right side.
+(Note that creating a VM in the same region as storage can provide a better performance.)
+3. Finally, click on the blue "CREATE" button at the bottom, which will create and start the VM.
+
+image::img3.PNG[width="790", height="800"]
+
+
+If you are met with any problems, detailed instructions for creating a GCP account and lauching VM can be found at this link here: `https://cloud.google.com/compute/docs/quickstart-linux`.
+
+`Step 2`: Accessing a GCP VM from a local machine
+
+Upon successful creation of the GCP VM, we must access it from our local computer via SSH. This is done by clicking on the "SSH" button under the "Connect" column.
+
+image::img4.PNG[width="790"]
+
+Now the command shell should be running and you are ready to proceed. **Remember to stop the VM by running the command `sudo shutdown -h now` to prevent incurring additional cost.** You can start the VM again by connecting through SSH.
+
+== Using BLAST+ Docker Image
+
+`Step 1`: Docker has to be installed in our GCP VM as an application.
+
+image::img7.PNG[width="790"]
+
+Now run `docker run hello-world` to ensure correct installation of Docker.
+
+**Upon successful installation:** Your command shell should look something like this.
+
+image::img5.PNG[width="600"]
+
+**If you encounter any errors:** Run the command `sudo chmod 666 /var/run/docker.sock` after `sudo usermod -aG docker $USER` and try again.
+
+image::img6.PNG[width="790"]
+
+`Step 2`: Import sequences and create a BLAST database.
+
+In this example, we will be using the following input data to demostrate a working blast server on cloud.
+
+- Query: 1 sequence, 44 nucleotides, filse size 0.2KB
+- Database: 7 seqencees, 922 nucleotides, filse size 1.7kb
+
+Firstly, we have to fetch query and database sequences, followed by creating a custom BLAST database.
+
+image::img8.PNG[width="790"]
+
+Your command shell should look like this after each line of code is executed.
+
+image::img8.1.PNG[width="790"]
+
+This will end with the command `Digest: sha256:80410592eadbc4155f4b9b42e6fabad90d5a23832d5d889cef94fa4f6680a781
+Status: Downloaded newer image for ncbi/blast:latest` to signify completion.
+
+image::img8.2.PNG[width="790"]
+
+Next, we have to verify the customised BLAST database created above. These commands will display the accessions, sequence length, and common name of the sequences in the database.
+
+image::img9.PNG[width="790"]
+
+Your command shell should look like this after running the code.
+
+image::img9.1.PNG[width="790"]
+
+Alternatively, you can download performatted BLAST databases from Google Cloud Bucket. These are the BLAST databases available for download.
+
+image::img10.PNG[width="790"]
+
+`Step 3`: Run BLAST
+
+The first 2 mounts provide access to BLAST databases, the 3rd mount provide access to our query sequence(s), and the 4th mount provides a directory to save our output reusults.
+
+image::img12.PNG[width="790"]
+
+To view the content of our output file we run the command `$HOME/results/blastp.out`.
+
+image::img11.PNG[width="790"]
+image::img11.1.PNG[width="500"]
+
+`Step 4`: Stop the GCP instance
+
+Remember to stop our GCP VM to prevent incurring additional cost. This can be down by selecting the "stop" button under the dropdown button beside the "Connect" column.
+
+== BLAST+ Docker Image at a production level
+
+This section demonstrates the scalability of BLAST+ Docker image. Inputs of different sizes are tested with BLAST+ Docker Image to analyse the time required to download the nucleotide collection database. The input file used here contains 28 samples (multi-fasta files) with de novo aligned contigs from this research: https://www.ncbi.nlm.nih.gov/pubmed/31040829 
+
+Three analysis will thus be carried out :
+1) Analysis on only sample 1
+2) Analysis on samples 1 to 5
+3) Analysis on all 28 samples
+
+`Step 1`: Prepare directories and import sequences for processing
+
+image::img15.PNG[width="790"]
+
+Note: if you have run the previous commands to implement BLAST+ Docker, these directories would already be created.
+
+After running these commands, you should obtain these files:
+
+image::img13.PNG[width="790"]
+
+image::img14.PNG[width="790"]
+
+`Step 2`: Prepare input query files for the 3 respective analysis
+
+Here, we prepare three input query files: 1 for only sample 1, 1 for samples 1 to 5 and the last one for all 28 samples. Thereafter, we copy these input query file into our query directory as well.
+
+image::img16.PNG[width="790"]
+
+`Step 3`: Download nt_v5 BLAST database from GCP
+
+To look at the BLAST database available for download from GCP, run this command:
+
+image::img17.PNG[width="790"]
+
+Thereafter, run this command to download the nt_v5 BLAST database from GCP:
+
+image::img18.PNG[width="790"]
+
+The database will be stored in the directory blastdb and the data will look somewhat like the image below (but much more when fully complete):
+
+image::img21.PNG[width="790"]
+
+To check directory size of containing nt_v5 and the three query input files, run this command:
+
+image::img19.PNG[width="790"]
+
+`Step 4`: Running Blast for the three input query files
+
+The following codes runs blast for the three different input query files:
+
+image::img20.PNG[width="790"]
+
+
