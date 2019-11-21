@@ -4,7 +4,7 @@
 :toc-title:
 :toc-placement: preamble
 :sectnums:
-:imagesDir: images
+:imagesDir: image
 :stylesDir: stylesheets
 :xrefstyle: full
 :experimental:
